@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.green.food_roulette.payment.PaymentMapper">
+    <insert id="insUserPayment" useGeneratedKeys="true" keyProperty="ipayment">
+        INSERT INTO p_payment (imenu, imanagement)
+        VALUES (#{imenu}, #{imanagement})
+
+        <selectKey order="AFTER" resultType="UserPaymentResVo" keyProperty="ipayment,paymentAt,menu">
+            SELECT A.ipayment, A.payment_at paymentAt, B.menu
+            FROM p_payment A
+            INNER JOIN (
+                SELECT iuser_menu imenu, menu FROM p_user_menu
+                UNION
+                SELECT icommon_menu, menu FROM p_common_menu
+            ) B
+            ON A.imenu = B.imenu
+            WHERE A.ipayment = LAST_INSERT_ID();
+        </selectKey>
+    </insert>
+    <select id="getUserPic">
+        SELECT  B.imanagement,A.ipayment, C.menu,A.payment_at paymentAt
+        FROM p_payment A
+        INNER JOIN (
+            SELECT X.imanagement
+            FROM p_management X
+            INNER JOIN p_user Y
+            ON X.iuser=Y.iuser
+        ) B
+        ON A.imanagement = B.imanagement
+        INNER JOIN(
+        SELECT icommon_menu,menu
+        FROM p_common_menu
+        UNION
+        SELECT iuser_menu,menu
+        FROM p_user_menu A
+
+        )C
+        ON A.imenu=C.icommon_menu
+        WHERE A.ipayment=#{ipayment}
+    </select>
+    <select id="getUserPaymentList">
+        SELECT A.ipayment,DATE(A.payment_at) paymentAt,SUM(A.current_menu_price) total
+                ,case
+                    when  A.restaurant is NULL then '0' ELSE '1'
+                end  cmt
+        FROM p_payment A
+        INNER JOIN (
+            SELECT X.imanagement
+            FROM p_management X
+            INNER JOIN p_user Y
+            ON X.iuser=Y.iuser
+            WHERE X.iuser=#{iuser} AND X.year=#{year} AND X.month=#{month}
+        ) B
+        ON A.imanagement = B.imanagement
+        GROUP BY DATE(paymentAt)
+        ORDER BY A.payment_at
+    </select>
+    
+    <select id="getUserDetailPayment">
+        SELECT  B.imanagement,A.ipayment,C.menu,A.payment_at paymentAt
+        ,A.current_menu_price currentMenuPrice,A.review_grade reviewGrade,A.restaurant
+        FROM p_payment A
+        INNER JOIN (
+        SELECT X.imanagement,X.iuser
+        FROM p_management X
+        INNER JOIN p_user Y
+        ON X.iuser=Y.iuser
+        ) B
+        ON A.imanagement = B.imanagement
+        INNER JOIN(
+        SELECT icommon_menu,menu
+        FROM p_common_menu
+        UNION
+        SELECT iuser_menu,menu
+        FROM p_user_menu A
+
+        )C
+        ON A.imenu=C.icommon_menu
+        WHERE B.iuser=#{iuser} AND  DATE(A.payment_at)= #{paymentAt}
+        
+    </select>
+    
+    <select id="getNotReviewAt">
+        SELECT A.ipayment,DATE(A.payment_at) paymentAt,C.menu
+        ,case
+        when  A.restaurant is NULL then '0' ELSE '1'
+        end  cmt
+        FROM p_payment A
+        INNER JOIN (
+        SELECT X.imanagement,Y.iuser
+        FROM p_management X
+        INNER JOIN p_user Y
+        ON X.iuser=Y.iuser
+
+        ) B
+        ON A.imanagement = B.imanagement
+        INNER JOIN (
+        SELECT icommon_menu,menu
+        FROM p_common_menu
+        UNION
+        SELECT iuser_menu,menu
+        FROM p_user_menu
+
+        ) C
+        ON A.imenu=C.icommon_menu
+        WHERE  A.restaurant IS NULL AND year(A.payment_at)=#{year} AND B.iuser=#{iuser} AND MONTH(A.payment_at) =   #{month}
+        ORDER BY A.payment_at
+    </select>
+
+    <select id="getCruuntMenuPrice" resultType="int">
+        select current_menu_price
+        from p_payment
+        where ipayment=#{ipayment}
+    </select>
+    
+    <select id="getThisMonthPaymet">
+        SELECT month_limit monthLimit, balance
+        FROM p_management
+        WHERE iuser=#{iuser} AND year=#{year} and month=#{month}
+    </select>
+    
+    <update id="reviewPayment">
+        update p_payment
+        set current_menu_price=#{currentMenuPrice}
+        ,review_grade=#{reviewGrade}
+        ,restaurant=#{restaurant}
+        where ipayment=#{ipayment}
+    </update>
+
+    <delete id="deldteUserPayment">
+        DELETE
+        FROM A
+        USING p_payment A
+        LEFT JOIN (
+        SELECT x.imanagement,y.iuser
+        FROM p_management x
+        INNER JOIN p_user y
+        ON x.iuser=y.iuser
+        )B
+        ON A.imanagement= B.imanagement
+        WHERE A.ipayment=#{ipayment} AND B.iuser=#{iuser}
+    </delete>
+
+
+
+</mapper>

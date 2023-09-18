@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.green.food_roulette.tag_menu.TagMenuMapper">
+       <insert id="joinTagMenu">
+               insert into p_tag_menu
+               (imenu,itag)
+               VALUES
+               <foreach collection="list" item="item" open="(" separator="),(" close=")">
+                       #{item.imenu}, #{item.itag}
+               </foreach>
+       </insert>
+
+        <insert id="insOneTag">
+                insert into p_tag_menu
+                set imenu=#{imenu}
+                ,itag=#{itag}
+        </insert>
+        <select id="findUserMenuTag">
+                select itag
+                from p_tag_menu
+                where imenu=#{imenu}
+        </select>
+        <select id="findMenuTag">
+                SELECT C.itag,C.tag
+                FROM p_tag_menu A
+                INNER JOIN (
+                        SELECT icommon_menu,menu
+                        FROM p_common_menu
+                        UNION
+                        SELECT iuser_menu,menu
+                        FROM p_user_menu A
+
+                )B
+                ON A.imenu=B.icommon_menu
+                INNER JOIN p_tag C
+                ON A.itag=C.itag
+                WHERE B.menu=#{menu}
+        </select>
+
+
+        <select id="getTagMenu" resultType="TagMenuGetTagVo">
+                SELECT  A.imenu imenu,B.menu menu ,COUNT(*)
+                from (
+                        SELECT X.itag,X.imenu,Y.tag
+                        FROM p_tag_menu X
+                        INNER JOIN p_tag Y
+                        ON X.itag=Y.itag
+                )  A
+                INNER JOIN (
+                        SELECT icommon_menu,menu
+                        FROM p_common_menu
+                        UNION
+                        SELECT iuser_menu,menu
+                        FROM p_user_menu
+                        WHERE iuser=#{iuser} and activation=0
+                ) B
+                ON A.imenu=B.icommon_menu
+                WHERE A.tag
+                        IN
+                <foreach collection="list" item="item" open="(" separator="," close=")">
+                        #{item.tag}
+                </foreach>
+                GROUP BY A.imenu
+                HAVING COUNT(*)>=#{size}
+        </select>
+        <delete id="delMenuTag">
+                delete from A
+                Using p_tag_menu A
+                left join p_user_menu B
+                on A.imenu = B.iuser_menu
+                where B.iuser=#{iuser} and B.iuser_menu = #{iuserMenu}
+        </delete>
+        <delete id="delTag">
+                delete from A
+                Using p_tag_menu A
+                left join p_user_menu B
+                on A.imenu = B.iuser_menu
+                where  A.itag = #{itag} and (B.iuser_menu = #{iuserMenu} and B.iuser = #{iuser})
+        </delete>
+
+
+</mapper>

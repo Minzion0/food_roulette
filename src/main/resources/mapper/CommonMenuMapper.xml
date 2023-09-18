@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.green.food_roulette.common_menu.CommonMenuMapper">
+    <select id="getCommonMenu">
+        SELECT B.iuser_menu,B.menu, GROUP_CONCAT(A.tag) AS tags,GROUP_CONCAT(A.itag) AS itags
+        FROM (
+        SELECT x.imenu, x.itag, y.tag
+        FROM p_tag_menu x
+        INNER JOIN p_tag y
+        ON x.itag = y.itag
+        ) A
+        INNER JOIN (
+        SELECT  icommon_menu iuser_menu, menu
+        FROM p_common_menu
+
+        )B
+        ON A.imenu=B.iuser_menu
+        GROUP BY A.imenu
+    </select>
+</mapper>

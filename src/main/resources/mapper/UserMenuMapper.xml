@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.green.food_roulette.user_menu.UserMenuMapper">
+    <insert id="insUserMenu" useGeneratedKeys="true" keyProperty="iuserMenu">
+        insert into p_user_menu
+        set iuser=#{iuser}
+        ,menu=#{menu}
+    </insert>
+
+    <select id="findUserMenu" resultType="UserMenuFindVo">
+        select iuser_menu iuserMenu, activation
+        from p_user_menu
+        where menu=#{menu} and iuser=#{iuser}
+    </select>
+    <select id="selUserMenu">
+        select iuser_menu iuserMenu, menu,iuser,activation
+        from p_user_menu
+        where iuser_menu=#{iuserMenu}
+    </select>
+    <select id="getUserMenu" resultMap="inMenuTags">
+        SELECT B.iuser_menu iuserMenu,B.menu
+        FROM (
+        SELECT x.imenu, x.itag, y.tag
+        FROM p_tag_menu x
+        INNER JOIN p_tag y
+        ON x.itag = y.itag
+        ) A
+        INNER JOIN (
+        SELECT iuser_menu,menu
+        FROM p_user_menu
+        WHERE iuser=#{iuser} AND activation=0
+
+        )B
+        ON A.imenu=B.iuser_menu
+        GROUP BY A.imenu
+    </select>
+    <select id="getActivationUserMenu" >
+        select iuser_menu iuserMenu, menu,iuser,activation
+        from p_user_menu
+        where iuser=#{iuser} and activation=0
+    </select>
+    <update id="updActivation">
+        update p_user_menu
+        set activation =#{activation}
+        where iuser_menu=#{iuserMenu}
+    </update>
+    <select id="findActivation">
+        select activation
+        from p_user_menu
+        where iuser_menu=#{iuserMenu}
+    </select>
+<!--    resultMap적용해보기-->
+    <resultMap id="inMenuTags" type="UserMenuRes">
+        <id property="iuserMenu" column="iuserMenu"/>
+        <collection property="tags" javaType="java.util.List"
+                    ofType="UserMenuResm" column ="{iuserMenu=iuserMenu}"
+                    select="inTags"/>
+    </resultMap>
+    <select id="getMenusTest" resultMap="inMenuTags">
+            SELECT iuser_menu AS iuserMenu, menu
+            FROM p_user_menu
+            WHERE iuser = #{iuser} AND activation = 0
+            UNION
+            SELECT icommon_menu AS iuserMenu, menu
+            FROM p_common_menu
+            ORDER BY iuserMenu
+    </select>
+
+    <select id="inTags" parameterType="UserMenuRes" resultType="UserMenuResm">
+        SELECT B.itag, A.tag
+        FROM p_tag A
+        INNER JOIN p_tag_menu B ON A.itag = B.itag
+        WHERE B.imenu = #{iuserMenu}
+    </select>
+
+    <select id="getMenus">
+        SELECT B.iuser_menu iuserMenu,B.menu
+            , GROUP_CONCAT(A.tag) AS tags,GROUP_CONCAT(A.itag) AS itags
+        FROM (
+            SELECT x.imenu, x.itag, y.tag
+            FROM p_tag_menu x
+            INNER JOIN p_tag y
+            ON x.itag = y.itag
+        ) A
+        INNER JOIN (
+            SELECT iuser_menu,menu
+            FROM p_user_menu
+            WHERE iuser=#{iuser} AND activation=0
+            union
+            SELECT icommon_menu,menu
+            FROM p_common_menu
+        )B
+        ON A.imenu=B.iuser_menu
+        GROUP BY A.imenu
+    </select>
+</mapper>

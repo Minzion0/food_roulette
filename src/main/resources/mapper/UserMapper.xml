@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.green.food_roulette.user.UserMapper">
+    <insert id="insUser" >
+        INSERT INTO p_user (name)
+        SELECT #{name} FROM DUAL
+        WHERE NOT EXISTS (
+            SELECT name
+            FROM p_user
+            WHERE name = #{name}
+        )
+        <selectKey order="AFTER" resultType="UserVo" keyProperty="iuser">
+            select iuser
+            from p_user
+            where name = #{name}
+        </selectKey>
+    </insert>
+
+    <select id="getUser">
+        select iuser,name
+        from p_user
+        where iuser=#{iuser}
+    </select>
+</mapper>

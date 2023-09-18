@@ -1,0 +1,31 @@
+
+#DB
+spring:
+  servlet:
+    multipart:
+      max-file-size: 3MB
+      max-request-size: 12MB
+
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://192.168.0.144:3306/team_c?allowMultiQueries=true
+    username: team_c
+    password: green502
+
+  #mybatis
+
+
+mybatis:
+  type-aliases-package: com.green.food_roulette
+  mapper-locations: mapper/**/*.xml
+
+#SWAGGER
+springdoc:
+
+  swagger-ui:
+    path: /swagger.html
+    operations-sorter : method
+
+
+file:
+  dir: d:\download\

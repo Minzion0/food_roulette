@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.green.food_roulette.management.ManagementMapper">
+    <insert id="setUserThisMonthManagement" >
+        INSERT INTO p_management (iuser,month_limit,balance)
+        SELECT #{iuser},#{monthLimit},#{monthLimit}
+        WHERE NOT EXISTS(
+        SELECT iuser,YEAR,month
+        FROM p_management
+        WHERE iuser=#{iuser} AND (month =month(now()) AND year=year(now()) )
+        )
+    </insert>
+
+    <select id="getUserThisMonthManagement">
+        SELECT imanagement,year,month,month_limit monthLimit
+        ,balance ,expense
+        FROM p_management
+        WHERE iuser=#{iuser} and YEAR=YEAR(NOW()) AND MONTH=MONTH(NOW())
+    </select>
+
+    <select id="getUserManagementList">
+        select imanagement, year,month,month_limit monthLimit
+        ,balance,expense
+        from p_management
+        WHERE iuser = #{iuser}  AND YEAR=YEAR(NOW()) AND MONTH=#{month}
+
+    </select>
+    <select id="getUserMonthPaymentList">
+        SELECT B.menu,sum(A.current_menu_price) SUM ,COUNT(B.menu) count
+        FROM p_payment A
+        INNER JOIN  (
+            SELECT iuser_menu,menu
+            FROM p_user_menu
+            UNION
+            SELECT  icommon_menu, menu
+            FROM p_common_menu
+        )B
+        ON A.imenu=B.iuser_menu
+        INNER JOIN (
+            SELECT x.imanagement,z.iuser
+            FROM p_user z
+            INNER JOIN p_management x
+            ON z.iuser=x.iuser
+        )C
+        ON A.imanagement=C.imanagement
+        WHERE C.iuser=#{iuser} AND (month(A.payment_at)=#{month} and year(A.payment_at)=#{year})
+        GROUP BY B.menu
+        ORDER BY COUNT(B.menu) desc
+    </select>
+
+    <select id="monthTotalPayment">
+        SELECT imanagement,sum(current_menu_price) total
+        FROM p_payment
+        WHERE YEAR(payment_at) = YEAR(NOW()) AND MONTH(payment_at) = MONTH(NOW())
+        GROUP BY imanagement
+    </select>
+    
+    <update id="updUserMonthManagement">
+        update  p_management
+        set month_limit= month_limit + #{monthLimit}
+        ,balance= balance + #{monthLimit}
+        where iuser=#{iuser} and year=year(current_timestamp()) and month = month(current_timestamp())
+    </update>
+
+  <update id="calculateManagement">
+      update p_management
+      set balance=balance-#{currentMenuPrice}
+      ,expense=expense+#{currentMenuPrice}
+      where iuser=#{iuser} and year=#{year} and month=#{month}
+  </update>
+
+  <update id="remManagement">
+      update p_management
+      set balance = balance+#{cruuntMenuPrice}
+      ,expense=expense-#{cruuntMenuPrice}
+      where iuser=#{iuser} and imanagement=#{imanagement}
+  </update>
+    <select id="getManagement">
+        SELECT imanagement,year,month,month_limit monthLimit
+        ,balance ,expense
+        FROM p_management
+        where imanagement=#{imanagement}
+    </select>
+
+</mapper>
