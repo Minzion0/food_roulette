@@ -115,6 +115,7 @@ public class UserMenuService {
         List<UserMenuRes>  menusTest = mapper.getMenusTest(dto);
         long end = System.currentTimeMillis();
         log.info("groupConcat : {}", (end - start));
+
         return menusTest;
     }
         private  List<UserMenuRes> getUserMenuRes(List<MenusVo> menus) {
