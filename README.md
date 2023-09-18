@@ -39,11 +39,6 @@ p_tag :메뉴와 연결될 테그를 저장한다
 p_tag_menu : 테그에 소속된 메뉴를 저장한다
 
 
-## 각
+## 시연 연상
 
-
-
-
-
-//시연영상
 ![Mekki - Chrome 2023-07-12 11-57-47 (1)](https://github.com/Minzion0/food_roulette/assets/130621431/d0f8657f-87c6-4ce9-8e13-f36b8a32c533)
