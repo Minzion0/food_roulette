@@ -39,6 +39,15 @@ p_tag :메뉴와 연결될 테그를 저장한다
 p_tag_menu : 테그에 소속된 메뉴를 저장한다
 
 
+### 플로우 차트
+
+![image](https://github.com/Minzion0/food_roulette/assets/130621431/95c980c4-4789-431b-a072-0508eada5332)
+
+
+### figma를 활용하여 페이지 구상 및 회의
+![image](https://github.com/Minzion0/food_roulette/assets/130621431/f2b463df-bad4-4fc7-a88e-061df8e3cd05)
+
+
 ## 시연 연상
 
 ![Mekki - Chrome 2023-07-12 11-57-47 (1)](https://github.com/Minzion0/food_roulette/assets/130621431/d0f8657f-87c6-4ce9-8e13-f36b8a32c533)
